@@ -1,0 +1,14 @@
+{
+    "name": "share-server",
+    "version": "0.1.0",
+    "description": "",
+    "keywords": ["sharejs", "server"],
+    "url": "https://github.com/cse-bristol/share-server",
+    "license": "MIT",
+    "dependencies": {
+	"share": "0.7.3",
+	"browserchannel": "2.0.0",
+	"connect": "3.3.3",
+	"livedb-mongo": "0.4.1"
+    }
+}
