@@ -1,3 +1,4 @@
+
 "use strict";
 
 /*global module, require, process*/
@@ -12,8 +13,8 @@ var sharejs = require('share'),
     backend = livedbmongo('mongodb://localhost:27017/share?auto_reconnect', {safe:true}),
     share = sharejs.server.createClient({backend: livedb.client(backend)}),
     port = function() {
-	if (process.argv.length === 1) {
-	    return process.argv[0];
+	if (process.argv.length === 3) {
+	    return parseInt(process.argv[2]);
 	} else {
 	    return 8080;
 	}
