@@ -20,7 +20,8 @@ var sharejs = require('share'),
 	} else {
 	    return 8080;
 	}
-    }();
+    }(),
+    newRegex = /new-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/;
 
 /*
  Add an HTTP handler for querying. This must happen first.
@@ -44,7 +45,16 @@ server.get(
 		    if (error) {
 			next(error);
 		    } else {
-			res.send(_.pluck(results, "docName"));
+			res.send(
+			    _.pluck(results, "docName")
+				.filter(function(name) {
+				    /*
+				     We've stored out temporary documents with the prefix 'new-' followed by a GUID.
+				     We don't want to return these as search results here.
+				     */
+				    return !newRegex.test(name);
+				})
+			);
 		    }
 		}
 	    );
