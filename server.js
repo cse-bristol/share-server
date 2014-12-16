@@ -5,8 +5,8 @@
 
 var sharejs = require('share'),
     livedb = sharejs.db,
-    connect = require('connect'),
-    server = connect(),
+    express = require('express'),
+    server = express(),
     Duplex = require('stream').Duplex,
     browserChannel = require('browserchannel').server,
     livedbmongo = require('livedb-mongo'),
@@ -20,6 +20,11 @@ var sharejs = require('share'),
 	}
     }();
 
+/*
+ Add our ShareJS middleware. This is used for long running XHR communication with the browser.
+
+ It lets us keep our documents syncrhonized.
+ */
 server.use(
     browserChannel(
 	function(client) {
