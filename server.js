@@ -21,6 +21,20 @@ var sharejs = require('share'),
     }();
 
 /*
+ Add an HTTP handler for querying. This must happen first.
+ */
+server.get(
+    "/channel/search/:collection",
+    function(req, res, next) {
+	if (req.query.q === undefined) {
+	    res.send('Looking at ' + req.params.collection);
+	} else {
+	    res.send('Searching for "' + req.query.q + '" in collection ' + req.params.collection);
+	}
+    }
+);
+
+/*
  Add our ShareJS middleware. This is used for long running XHR communication with the browser.
 
  It lets us keep our documents syncrhonized.
