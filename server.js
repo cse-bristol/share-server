@@ -33,7 +33,12 @@ server.get(
 	} else {
 	    backend.queryFetch(
 		req.params.collection,
-		req.query.q,
+		{
+		    _id:
+		    {
+			$regex: req.query.q
+		    }
+		},
 		{},
 		function(error, results) {
 		    if (error) {
