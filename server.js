@@ -4,14 +4,16 @@
 /*global module, require, process*/
 
 var sharejs = require('share'),
+    _ = require("lodash"),
     livedb = sharejs.db,
     express = require('express'),
     server = express(),
     Duplex = require('stream').Duplex,
     browserChannel = require('browserchannel').server,
-    livedbmongo = require('livedb-mongo'),
-    backend = livedbmongo('mongodb://localhost:27017/share?auto_reconnect', {safe:true}),
-    share = sharejs.server.createClient({backend: livedb.client(backend)}),
+    liveDBMongo = require('livedb-mongo'),
+    mongoConnect = liveDBMongo('mongodb://localhost:27017/share?auto_reconnect', {safe:true}),
+    backend = livedb.client(mongoConnect),
+    share = sharejs.server.createClient({backend: backend}),
     port = function() {
 	if (process.argv.length === 3) {
 	    return parseInt(process.argv[2]);
@@ -27,9 +29,20 @@ server.get(
     "/channel/search/:collection",
     function(req, res, next) {
 	if (req.query.q === undefined) {
-	    res.send('Looking at ' + req.params.collection);
+	    res.status(400).send("Expected a query string parameter q containing a search term.");
 	} else {
-	    res.send('Searching for "' + req.query.q + '" in collection ' + req.params.collection);
+	    backend.queryFetch(
+		req.params.collection,
+		req.query.q,
+		{},
+		function(error, results) {
+		    if (error) {
+			next(error);
+		    } else {
+			res.send(_.pluck(results, "docName"));
+		    }
+		}
+	    );
 	}
     }
 );

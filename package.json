@@ -9,6 +9,7 @@
 	"share": "0.7.3",
 	"browserchannel": "2.0.0",
 	"express": "4.10.6",
-	"livedb-mongo": "0.4.1"
+	"livedb-mongo": "0.4.1",
+	"lodash": "2.4.1"
     }
 }
