@@ -1,0 +1,19 @@
+[Unit]
+Description=Mediawiki Share JS web server running on node.js with added REST API for searching.
+Documentation=https://github.com/cse-bristol/share-server/blob/master/README.org
+Wants=local-fs.target
+After=local-fs.target network.target
+ 
+[Install]
+WantedBy=multi-user.target
+ 
+[Service]
+Type=simple
+User=nobody
+Group=nogroup
+WorkingDirectory=/opt/share-server
+ExecStart=/usr/bin/nodejs /opt/share-server/server.js 11000
+KillMode=process
+Restart=on-success
+PrivateTmp=true
+StandardOutput=syslog
