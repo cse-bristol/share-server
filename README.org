@@ -3,7 +3,7 @@ A single-file ShareJS server which uses a MongoDB backend.
 
 Requires a running instance of [[http://www.mongodb.org/][MongoDB]] on localhost:27017, and a [[http://nodejs.org/][NodeJS]] installation.
 
-Once those are available, all we can fetch our dependencies as follows:
+Once those are available, we can fetch our dependencies as follows:
 #+BEGIN_SRC sh
 npm install
 #+END_SRC
@@ -16,13 +16,22 @@ node server.js 80; # 8080 Is the default port.
 ** Debian Service Install
 This provides a systemd deamon called share-server and sets it to run on startup.
 
-Clone share-server
 #+BEGIN_SRC sh
-# Name must not include hyphens because systemd treats them in as special.
+# CLone share server
 git clone git@github.com:cse-bristol/share-server.git /opt/shareserver;
+
+# install dependencies
+cd /opt/shareserver;
+npm install;
+
+# Hard link the service file.
+# (If you prefer you can use cp here. Symlinks don't work with systemd.)
+ln /opt/shareserver/shareserver.service /etc/systemd/system/shareserver.service
+
+systemctl enable shareserver.service
+systemctl start shareserver.service
+
 #+END_SRC
 
-Symlink the service file
 
-ln -s /opt/share-server/shareserver.service /lib/systemd/system/shareserver.service
 
