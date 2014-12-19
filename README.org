@@ -12,3 +12,17 @@ Then run the following to host a browser-channel socket on the given port:
 #+BEGIN_SRC sh
 node server.js 80; # 8080 Is the default port.
 #+END_SRC
+
+** Debian Service Install
+This provides a systemd deamon called share-server and sets it to run on startup.
+
+Clone share-server
+#+BEGIN_SRC sh
+# Name must not include hyphens because systemd treats them in as special.
+git clone git@github.com:cse-bristol/share-server.git /opt/shareserver;
+#+END_SRC
+
+Symlink the service file
+
+ln -s /opt/share-server/shareserver.service /lib/systemd/system/shareserver.service
+
