@@ -1,9 +1,9 @@
-
 "use strict";
 
 /*global module, require, process*/
 
 var sharejs = require('share'),
+    json0 = require("ot-json0").type,
     _ = require("lodash"),
     livedb = sharejs.db,
     express = require('express'),
@@ -51,6 +51,96 @@ server.get(
 		}
 	    );
 	}
+    }
+);
+
+/*
+ Only works for documents with the JSON0 type.
+ */
+server.get(
+    "/channel/history/:collection/:document/:version",
+    function(req, res, next) {
+	var v = parseFloat(req.params.version),
+	    docName = req.params.document,
+	    coll = req.params.collection,
+	    finishedDoc,
+	    latestVersion,
+	    tryRespond = function() {
+		if (finishedDoc && latestVersion) {
+		    res.send({
+			doc: finishedDoc,
+			v: v,
+			latestV: latestVersion
+		    });
+		}
+	    };
+
+	backend.snapshotDb.getVersion(
+	    coll,
+	    docName,
+	    function(error, v) {
+		if (error) {
+		    next(error);
+		} else {
+		    latestVersion = v;
+		    tryRespond();
+		}
+	    }
+	);
+	
+	backend.getOps(
+	    coll,
+	    docName,
+	    0,
+	    // Make sure the end version is included.
+	    v + 1,
+	    function(error, opsToVersion) {
+		if (error) {
+		    next(error);
+		} else if (v > opsToVersion.length) {
+		    next("Version " + v + " of " + docName + " does not exist.");
+		    
+		} else {
+		    var doc,
+			lastCreateIndex,
+			lastDeleteIndex;
+
+		    opsToVersion.forEach(function(op, i) {
+			if (op.create) {
+			    doc = json0.create(
+				op.create.data
+			    );
+			    lastCreateIndex = i;
+			}
+			if (op.del) {
+			    lastDeleteIndex = i;
+			}
+		    });
+
+		    if (doc === undefined) {
+			next("Could not find a create operation for " + docName);
+		    } else if (lastDeleteIndex > lastCreateIndex) {
+			res.status(404).send("Document " + docName + " was deleted at v" + lastDeleteIndex);
+		    } else {
+			/* 
+			 Filter out the create operation (which we've already done) and everything which went before it.
+			 */
+			opsToVersion = opsToVersion.slice(lastCreateIndex + 1);
+
+			for (var i = opsToVersion.length - 1; i >= 0; i--) {
+			    doc = json0.apply(
+				doc,
+				opsToVersion[i]
+				    .op[0]
+			    );
+			}
+			
+			finishedDoc = doc;
+			tryRespond();
+		    }
+		}
+	    }
+	);
     }
 );
 
