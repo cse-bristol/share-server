@@ -127,7 +127,8 @@ server.get(
 			 */
 			opsToVersion = opsToVersion.slice(lastCreateIndex + 1);
 
-			for (var i = opsToVersion.length - 1; i >= 0; i--) {
+			var len = opsToVersion.length;
+			for (var i = 0; i < len; i++) {
 			    doc = json0.apply(
 				doc,
 				opsToVersion[i]
