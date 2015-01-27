@@ -98,7 +98,7 @@ server.get(
 		if (error) {
 		    next(error);
 		} else if (v > opsToVersion.length) {
-		    next("Version " + v + " of " + docName + " does not exist.");
+		    res.status(404).send("Version " + v + " of " + docName + " does not exist.");
 		    
 		} else {
 		    var doc,
