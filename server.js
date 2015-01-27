@@ -131,7 +131,7 @@ server.get(
 			    doc = json0.apply(
 				doc,
 				opsToVersion[i]
-				    .op[0]
+				    .op
 			    );
 			}
 			
