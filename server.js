@@ -31,21 +31,31 @@ server.get(
 	if (req.query.q === undefined) {
 	    res.status(400).send("Expected a query string parameter q containing a search term.");
 	} else {
-	    backend.queryFetch(
+	    backend.snapshotDb.queryProjected(
+		null, // 'livedb' - not used in the code
 		req.params.collection,
+		// fields list
+		null,
+		// query
 		{
-		    _id:
-		    {
+		    _id: {
 			$regex: req.query.q
 		    }
 		},
-		{},
+		{}, // options array
 		function(error, results) {
 		    if (error) {
 			next(error);
 		    } else {
 			res.send(
-			    _.pluck(results, "docName")
+			    results.map(
+				function(r) {
+				    return {
+					name: r.docName,
+					v: r.v
+				    };
+				}
+			    )
 			);
 		    }
 		}
