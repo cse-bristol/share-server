@@ -31,35 +31,41 @@ server.get(
 	if (req.query.q === undefined) {
 	    res.status(400).send("Expected a query string parameter q containing a search term.");
 	} else {
-	    backend.snapshotDb.queryProjected(
-		null, // 'livedb' - not used in the code
-		req.params.collection,
-		// fields list
-		null,
-		// query
-		{
-		    _id: {
-			$regex: req.query.q
+	    backend.snapshotDb.mongo
+		.collection(req.params.collection)
+		.find(
+		    // query
+		    {
+			_id: {
+			    $regex: req.query.q
+			},
+			_type: {
+			    $ne: null
+			}
+		    },
+		    // fields list
+		    {
+		    	"_id": true,
+		    	"_v": true
 		    }
-		},
-		{}, // options array
-		function(error, results) {
-		    if (error) {
-			next(error);
-		    } else {
-			res.send(
-			    results.map(
-				function(r) {
-				    return {
-					name: r.docName,
-					v: r.v
-				    };
-				}
-			    )
-			);
+		).toArray(
+		    function(error, results) {
+			if (error) {
+			    next(error);
+			} else {
+			    res.send(
+				results.map(
+				    function(r) {
+					return {
+					    name: r._id,
+					    v: r._v
+					};
+				    }
+				)
+			    );
+			}
 		    }
-		}
-	    );
+		);
 	}
     }
 );
