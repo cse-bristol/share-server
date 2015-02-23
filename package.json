@@ -5,6 +5,10 @@
     "keywords": ["sharejs", "server"],
     "url": "https://github.com/cse-bristol/share-server",
     "license": "MIT",
+    "repository": {
+	"type": "git",
+	"url": "git://github.com/cse-bristol/share-server.git"
+    },
     "dependencies": {
 	"share": "0.7.3",
 	"browserchannel": "2.0.0",
