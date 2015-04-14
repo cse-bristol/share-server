@@ -2,7 +2,10 @@
 
 /*global module, require, process*/
 
-var sharejs = require('share'),
+var sridSearch = require("srid-search")(function(error) {
+    console.error(error);
+}),
+    sharejs = require('share'),
     json0 = require("ot-json0").type,
     _ = require("lodash"),
     livedb = sharejs.db,
@@ -21,6 +24,21 @@ var sharejs = require('share'),
 	    return 8080;
 	}
     }();
+
+/*
+ Expose free-text search for coordinate systems.
+ */
+server.get(
+    "/channel/srid-search/:term",
+    function(req, res, next) {
+	if (req.params.term) {
+	    res.send(
+		sridSearch(req.params.term));
+	} else {
+	    res.send();
+	}
+    }
+);
 
 /*
  Add an HTTP handler for querying. This must happen first.
