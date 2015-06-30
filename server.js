@@ -91,11 +91,9 @@ server.get(
 server.get(
     "/channel/current/:collection/:document",
     function(req, res, next) {
-	var docName = req.params.document;
-
 	backend.fetch(
 	    req.params.collection,
-	    req.params.document,
+	    req.params.document.toLowerCase(),
 	    function(error, snapshot) {
 		if (error) {
 		    next(error);
@@ -114,7 +112,7 @@ server.get(
     "/channel/history/:collection/:document/:version",
     function(req, res, next) {
 	var v = parseFloat(req.params.version),
-	    docName = req.params.document,
+	    docName = req.params.document.toLowerCase(),
 	    coll = req.params.collection,
 	    finishedDoc,
 	    latestVersion,
