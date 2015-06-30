@@ -88,6 +88,25 @@ server.get(
     }
 );
 
+server.get(
+    "/channel/current/:collection/:document",
+    function(req, res, next) {
+	var docName = req.params.document;
+
+	backend.fetch(
+	    req.params.collection,
+	    req.params.document,
+	    function(error, snapshot) {
+		if (error) {
+		    next(error);
+		} else {
+		    res.send(snapshot);
+		}
+	    }
+	);
+    }
+);
+
 /*
  Only works for documents with the JSON0 type.
  */
