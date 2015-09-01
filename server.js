@@ -105,6 +105,53 @@ server.get(
     }
 );
 
+server.get(
+    "/channel/versions/:collection/:document/:versionsFrom",
+    function(req, res, next) {
+	var versionsFrom = parseFloat(req.params.versionsFrom),
+	    docName = req.params.document.toLowerCase(),
+	    coll = req.params.collection + "_ops";
+
+	backend.snapshotDb.mongo
+	    .collection(coll)
+	    .find(
+		// Query
+		{
+		    name: docName,
+		    v: {$gte: versionsFrom}
+		},
+		// Projection
+		{
+		    v: true,
+		    'm.ts': true,
+		    del: true
+		}
+	    )
+	    .toArray(function(error, results) {
+		if (error) {
+		    next(error);
+		} else {
+		    res.send(
+			results
+			    .filter(
+				function(r) {
+				    return !r.del;
+				}
+			    )
+			    .map(
+			    function(r) {
+				return {
+				    v: r.v,
+				    ts: r.m.ts
+				};
+			    }
+			)
+		    );
+		}
+	    });
+    }
+);
+
 /*
  Only works for documents with the JSON0 type.
  */
