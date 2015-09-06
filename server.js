@@ -13,9 +13,15 @@ var sridSearch = require("srid-search")(function(error) {
     server = express(),
     Duplex = require('stream').Duplex,
     browserChannel = require('browserchannel').server,
-    liveDBMongo = require('livedb-mongo'),
-    mongoConnect = liveDBMongo('mongodb://localhost:27017/share?auto_reconnect', {safe:true}),
-    backend = livedb.client(mongoConnect),
+
+    elasticSearchHost = 'http://localhost:9200',
+    
+    liveDBElasticSearchFactory = require('livedb-elasticsearch'),
+    liveDBElasticSearch = liveDBElasticSearchFactory(
+	elasticSearchHost,
+	'share'
+    ),
+    backend = livedb.client(liveDBElasticSearch),
     share = sharejs.server.createClient({backend: backend}),
     port = function() {
 	if (process.argv.length === 3) {
@@ -25,9 +31,12 @@ var sridSearch = require("srid-search")(function(error) {
 	}
     }(),
 
+    /*
+     We make a separate ElasticSearch client for more manual querying.
+     */
     elasticSearch = require('elasticsearch'),
     elasticSearchClient = new elasticSearch.Client({
-	host: 'http://localhost:9200',
+	host: elasticSearchHost,
 	apiVersion: "1.7",
 	suggestionCompression: true
     }),
@@ -102,39 +111,26 @@ server.get(
 	if (req.query.q === undefined) {
 	    res.status(400).send("Expected a query string parameter q containing a search term.");
 	} else {
-	    backend.snapshotDb.mongo
-		.collection(req.params.collection)
-		.find(
-		    // query
-		    {
-			_id: {
-			    $regex: req.query.q
-			},
-			_type: {
-			    $ne: null
-			}
-		    },
-		    // fields list
-		    {
-		    	"_id": true,
-		    	"_v": true
-		    }
-		).toArray(
+	    backend.snapshotDb
+		.titleSearch(
+		    req.params.collection,
+		    req.query.q,
 		    function(error, results) {
 			if (error) {
 			    next(error);
 			} else {
 			    res.send(
 				results.map(
-				    function(r) {
+				    function(snapshot) {
 					return {
-					    name: r._id,
-					    v: r._v
+					    name: snapshot.title,
+					    v: snapshot.version
 					};
 				    }
 				)
 			    );
 			}
+			
 		    }
 		);
 	}
@@ -165,43 +161,36 @@ server.get(
 	    docName = req.params.document.toLowerCase(),
 	    coll = req.params.collection + "_ops";
 
-	backend.snapshotDb.mongo
-	    .collection(coll)
-	    .find(
-		// Query
-		{
-		    name: docName,
-		    v: {$gte: versionsFrom}
-		},
-		// Projection
-		{
-		    v: true,
-		    'm.ts': true,
-		    del: true
+	backend.snapshotDb
+	    .getOps(
+		coll,
+		docName,
+		versionsFrom,
+		null,
+		function(error, results) {
+		    if (error) {
+			next(error);
+		    } else {
+			res.send(
+			    results
+				.filter(
+				    function(op) {
+					return !op.del;
+				    }
+				)
+				.map(
+				    function(op) {
+					return {
+					    v: op.v,
+					    ts: op.timestamp
+					};
+				    }
+				)
+			);
+		    }
+		    
 		}
-	    )
-	    .toArray(function(error, results) {
-		if (error) {
-		    next(error);
-		} else {
-		    res.send(
-			results
-			    .filter(
-				function(r) {
-				    return !r.del;
-				}
-			    )
-			    .map(
-				function(r) {
-				    return {
-					v: r.v,
-					ts: r.m.ts
-				    };
-				}
-			    )
-		    );
-		}
-	    });
+	    );
     }
 );
 
