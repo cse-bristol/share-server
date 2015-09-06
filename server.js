@@ -23,7 +23,60 @@ var sridSearch = require("srid-search")(function(error) {
 	} else {
 	    return 8080;
 	}
-    }();
+    }(),
+
+    elasticSearch = require('elasticsearch'),
+    elasticSearchClient = new elasticSearch.Client({
+	host: 'http://localhost:9200',
+	apiVersion: "1.7",
+	suggestionCompression: true
+    }),
+    mediawikiCategoryIndex = 'mediawiki_general_first',
+    mediawikiCategoryType = 'page';
+
+/*
+ Query Mediawiki's ElasticSearch for categories which belong to Category:Projects.
+
+ Return their titles.
+ */
+server.get(
+    "/channel/projects",
+    function(req, res, next) {
+	elasticSearchClient.search(
+	    {
+		index: mediawikiCategoryIndex,
+		type: mediawikiCategoryType,
+		body: {
+		    fields: ['title'],
+		    query: {
+			filtered: {
+			    query: {
+				match: {
+				    "category.lowercase_keyword": "projects"
+				}
+			    },
+			    filter: {
+				term: {
+				    namespace_text: "Category"
+				}
+			    }
+			}
+		    }
+		}
+	    },
+	    function(error, result) {
+		if (error) {
+		    next(error);
+		    
+		} else {
+		    res.send(result.hits.hits.map(function(hit) {
+			return hit.fields.title[0];
+		    }));
+		}
+	    }
+	);
+    }
+);
 
 /*
  Expose free-text search for coordinate systems.
@@ -139,13 +192,13 @@ server.get(
 				}
 			    )
 			    .map(
-			    function(r) {
-				return {
-				    v: r.v,
-				    ts: r.m.ts
-				};
-			    }
-			)
+				function(r) {
+				    return {
+					v: r.v,
+					ts: r.m.ts
+				    };
+				}
+			    )
 		    );
 		}
 	    });

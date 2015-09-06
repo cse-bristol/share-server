@@ -16,6 +16,7 @@
 	"livedb-mongo": "0.4.1",
 	"lodash": "2.4.1",
 	"ot-json0": "1.0.1",
+	"elasticsearch": "8.0.1",
 	"srid-search": "git://github.com/cse-bristol/srid-search.git"
     }
 }
