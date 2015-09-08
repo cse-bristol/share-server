@@ -121,10 +121,9 @@ server.get(
 			} else {
 			    res.send(
 				results.map(
-				    function(snapshot) {
+				    function(title) {
 					return {
-					    name: snapshot.title,
-					    v: snapshot.version
+					    name: title
 					};
 				    }
 				)
