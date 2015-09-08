@@ -158,7 +158,7 @@ server.get(
     function(req, res, next) {
 	var versionsFrom = parseFloat(req.params.versionsFrom),
 	    docName = req.params.document.toLowerCase(),
-	    coll = req.params.collection + "_ops";
+	    coll = req.params.collection;
 
 	backend.snapshotDb
 	    .getOps(
