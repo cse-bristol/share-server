@@ -1,6 +1,6 @@
 "use strict";
 
-/*global module, require, process*/
+/*global module, require, process, setTimeout*/
 
 var sridSearch = require("srid-search")(function(error) {
     console.error(error);
@@ -19,7 +19,17 @@ var sridSearch = require("srid-search")(function(error) {
     liveDBElasticSearchFactory = require('livedb-elasticsearch'),
     liveDBElasticSearch = liveDBElasticSearchFactory(
 	elasticSearchHost,
-	'share'
+	'share',
+	{
+	    extraMappings: {
+		snapshotData: {
+		    project: {
+			type: 'string',
+			index: 'not_analyzed'
+		    }
+		}
+	    }
+	}
     ),
     backend = livedb.client(liveDBElasticSearch),
     share = sharejs.server.createClient({backend: backend}),
@@ -41,7 +51,25 @@ var sridSearch = require("srid-search")(function(error) {
 	suggestionCompression: true
     }),
     mediawikiCategoryIndex = 'mediawiki_general_first',
-    mediawikiCategoryType = 'page';
+    mediawikiCategoryType = 'page',
+    esMappingsReady = false;
+
+(function initializeMappings() {
+    if (!esMappingsReady) {
+
+        liveDBElasticSearch.ensureMappingsCreated(function(error, response) {
+            if (error) {
+                console.error("Failed to setup mappings, retrying", error);
+                setTimeout(
+                    initializeMappings,
+                    1000
+                );
+            } else {
+                esMappingsReady = true;
+            }
+        });
+    }
+}());
 
 /*
  Query Mediawiki's ElasticSearch for categories which belong to Category:Projects.
