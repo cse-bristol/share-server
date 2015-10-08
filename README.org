@@ -1,14 +1,18 @@
 * Share Server
 A single-file ShareJS server which uses a MongoDB backend.
 
-Requires a running instance of [[http://www.mongodb.org/][MongoDB]] on localhost:27017, and a [[http://nodejs.org/][NodeJS]] installation.
+* Installation
+** Dependencies
+ + A running instance of [[https://www.elastic.co/products/elasticsearch][ElasticSearch]] on localhost:9200.
+ + A [[http://nodejs.org/][NodeJS]] installation.
 
-Once those are available, we can fetch our dependencies as follows:
+Once those are available, we can fetch our other dependencies as follows:
 #+BEGIN_SRC sh
 npm install
 #+END_SRC
 
-Then run the following to host a browser-channel socket on the given port:
+** Running
+After getting dependencies, run the following to host a browser-channel socket on the given port:
 #+BEGIN_SRC sh
 node server.js 80; # 8080 Is the default port.
 #+END_SRC
