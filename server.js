@@ -89,7 +89,7 @@ server.get(
 			filtered: {
 			    query: {
 				match: {
-				    "category.lowercase_keyword": "projects"
+				    "category.lowercase_keyword": "projectsandsubprojects"
 				}
 			    },
 			    filter: {
