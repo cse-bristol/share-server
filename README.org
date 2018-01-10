@@ -1,5 +1,5 @@
 * Share Server
-A single-file ShareJS server which uses a MongoDB backend.
+A single-file ShareJS server which uses an ElasticSearch backend.
 
 * Installation
 ** Dependencies
@@ -34,8 +34,4 @@ ln /opt/shareserver/shareserver.service /etc/systemd/system/shareserver.service
 
 systemctl enable shareserver.service
 systemctl start shareserver.service
-
 #+END_SRC
-
-
-
